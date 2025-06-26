@@ -3,7 +3,7 @@ version: "3.8"
 services:
   app:
     build:
-      context: /workspaces/${localWorkspaceFolderBasename}
+      context: ..
       dockerfile: .devcontainer/Dockerfile
     container_name: laravel_app
     ports:
@@ -45,7 +45,7 @@ services:
 
   react-app:
     build:
-      context: /workspaces/${localWorkspaceFolderBasename}/frontend
+      context: ..frontend
       dockerfile: Dockerfile
     container_name: react_app
     ports:
