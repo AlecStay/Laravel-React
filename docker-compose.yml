@@ -1,0 +1,66 @@
+version: "3.8"
+
+services:
+  app:
+    build:
+      context: /workspaces/${localWorkspaceFolderBasename}
+      dockerfile: .devcontainer/Dockerfile
+    container_name: laravel_app
+    ports:
+      - "8000:8000"
+    volumes:
+      - /workspaces/${localWorkspaceFolderBasename}/laravel:/var/www
+    depends_on:
+      - postgres
+    command: tail -f /dev/null
+    networks:
+      - laravel
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: laravel_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: laravel
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: laravel_db
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - laravel
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    restart: unless-stopped
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    depends_on:
+      - postgres
+    networks:
+      - laravel
+
+  react-app:
+    build:
+      context: /workspaces/${localWorkspaceFolderBasename}/frontend
+      dockerfile: Dockerfile
+    container_name: react_app
+    ports:
+      - "3000:3000"
+    volumes:
+      - /workspaces/${localWorkspaceFolderBasename}/frontend:/app
+      - /app/node_modules
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    networks:
+      - laravel
+
+volumes:
+  db_data:
+    driver: local
+
+networks:
+  laravel:

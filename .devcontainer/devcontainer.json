@@ -1,0 +1,25 @@
+{
+  "name": "Laravel and React Dev",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "runServices": ["app", "react-app", "postgres", "pgadmin"],
+  "forwardPorts": [8000, 3000, 5050],
+  "postCreateCommand": "[ ! -f laravel/artisan ] && composer create-project laravel/laravel laravel && cd laravel && php artisan key:generate && chmod -R 777 storage bootstrap/cache || true",
+  "postStartCommand": "docker exec react_app bash -c '[[ ! -f /app/package.json ]] && npx create-react-app /app || echo React ya existe'",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "bmewburn.vscode-intelephense-client",
+        "xdebug.php-pack",
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "dsznajder.es7-react-js-snippets"
+      ],
+      "settings": {
+        "php.validate.executablePath": "/usr/local/bin/php"
+      }
+    }
+  },
+  "remoteUser": "appuser"
+}
