@@ -1,25 +1,35 @@
 {
-    "name": "Laravel-React Codespace",
-    "dockerComposeFile": "../docker-compose.yml",
-    "service": "app", // Conecta VS Code al servicio 'app' (Laravel)
-    "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}/laravel", // Abre VS Code en la carpeta Laravel por defecto
-    "customizations": {
-        "vscode": {
-            "extensions": [
-                "bmewburn.vscode-intelephense-client",
-                "dbaeumer.vscode-eslint",
-                "esbenp.prettier-vscode",
-                "ms-azuretools.vscode-docker",
-                "ms-vscode.vscode-typescript-tslint-plugin",
-                "PHP.php-debug",
-                "Vue.volar",
-                "bradlc.vscode-tailwindcss",
-                "formulahendry.auto-rename-tag",
-                "ritwickdey.liveserver"
-            ]
-        }
-    },
-    // Ejecuta este script después de que el contenedor se haya creado y el volumen montado
-    "postCreateCommand": "bash .devcontainer/post-create.sh",
-    "forwardPorts": [8000, 3000, 5050] // Puertos que quieres exponer
+  "name": "Laravel and React Development Environment",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "runServices": ["app", "react-app", "postgres", "pgadmin"],
+  "forwardPorts": [
+    8000,
+    8080,
+    3000,
+    5050
+  ],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "xdebug.php-pack",
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "bmewburn.vscode-intelephense-client",
+        "naumovs.color-highlight",
+        "dsznajder.es7-react-js-snippets",
+        "formulahendry.auto-close-tag",
+        "formulahendry.auto-rename-tag",
+        "msjsdiag.debugger-for-chrome"
+      ],
+      "settings": {
+        "php.validate.executablePath": "/usr/local/bin/php",
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  },
+  "remoteUser": "appuser",
+  "postCreateCommand": "php /var/www/artisan key:generate && chmod -R 777 /var/www/storage /var/www/bootstrap/cache || true",
+  "postStartCommand": "docker exec react_app bash -c 'cd /app && npm install'"
 }

@@ -1,0 +1,66 @@
+version: "3.8"
+
+services:
+  app:
+    build:
+      context: .. # <--- ¡CAMBIO CRÍTICO AQUÍ! Ahora el contexto es la raíz del repositorio
+      dockerfile: .devcontainer/Dockerfile # <--- Y AQUÍ: La ruta al Dockerfile es relativa a la raíz
+    container_name: laravel_app
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../laravel:/var/www # Esta ruta ya era correcta, es relativa a donde está docker-compose.yml
+    depends_on:
+      - postgres
+    command: php artisan serve --host=0.0.0.0 --port=8000 # Esto sobrescribe el CMD del Dockerfile, es válido
+    networks:
+      - laravel # Usamos el nombre de red que tienes
+
+  postgres:
+    image: postgres:15-alpine # Mejor usar una versión específica
+    container_name: laravel_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: laravel
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: laravel_db
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - laravel
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    restart: unless-stopped
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: adming@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    depends_on:
+      - postgres
+    networks:
+      - laravel
+
+  react-app:
+    build:
+      context: ./frontend # El contexto para React es la subcarpeta 'frontend'
+      dockerfile: Dockerfile # Su Dockerfile está dentro de esa subcarpeta
+    container_name: react_app
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../frontend:/app # <--- ¡CAMBIO CRÍTICO AQUÍ! Para que el volumen apunte a la carpeta frontend real
+      - /app/node_modules # Para evitar que node_modules del host sobrescriba el del contenedor
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    networks:
+      - laravel
+
+volumes:
+  db_data:
+    driver: local
+
+networks:
+  laravel: # Definición de la red
