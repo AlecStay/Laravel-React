@@ -1,24 +1,18 @@
-# Se recomienda eliminar la línea 'version' ya que es obsoleta en Docker Compose V2.
-# Si usas Docker Compose V1, puedes mantenerla, pero si es Codespaces,
-# probablemente usas V2 y se ignora.
-# version: "3.8"
-
 services:
   app:
     build:
-      context: . # CORRECCIÓN: El contexto ahora es el directorio donde está docker-compose.yml (la raíz del proyecto)
-      dockerfile: .devcontainer/Dockerfile
+      context: . # El contexto de construcción es la raíz del repositorio
+      dockerfile: .devcontainer/Dockerfile # Ruta al Dockerfile de Laravel
     container_name: laravel_app
     ports:
       - "8000:8000"
     volumes:
-      # Asegúrate que ${localWorkspaceFolderBasename} se resuelva correctamente en Codespaces.
-      # Si Laravel está en la raíz, el path debería ser /workspaces/${localWorkspaceFolderBasename}:/var/www
-      # Si Laravel *realmente* está en un subdirectorio 'laravel' dentro de la raíz, entonces la ruta actual está bien.
+      # Monta la carpeta 'laravel' de tu host en '/var/www' dentro del contenedor
       - /workspaces/${localWorkspaceFolderBasename}/laravel:/var/www
     depends_on:
-      - postgres
-    command: tail -f /dev/null
+      postgres:
+        condition: service_started
+    command: tail -f /dev/null # Mantiene el contenedor ejecutándose
     networks:
       - laravel
 
@@ -45,23 +39,24 @@ services:
       PGADMIN_DEFAULT_EMAIL: admin@admin.com
       PGADMIN_DEFAULT_PASSWORD: admin
     depends_on:
-      - postgres
+      postgres:
+        condition: service_started
     networks:
       - laravel
 
   react-app:
     build:
-      context: ./frontend # CORRECCIÓN: Apunta al subdirectorio 'frontend' dentro de la raíz del proyecto
-      dockerfile: Dockerfile
+      context: ./frontend # El contexto de construcción es la carpeta 'frontend'
+      dockerfile: Dockerfile # Ruta al Dockerfile de React (dentro de 'frontend')
     container_name: react_app
     ports:
       - "3000:3000"
     volumes:
-      # Asegúrate que ${localWorkspaceFolderBasename} se resuelva correctamente en Codespaces.
+      # Monta la carpeta 'frontend' de tu host en '/app' dentro del contenedor React
       - /workspaces/${localWorkspaceFolderBasename}/frontend:/app
-      - /app/node_modules # Esto asegura que node_modules se monte como un volumen anónimo, no sobrescribiendo el de la máquina host.
+      - /app/node_modules # Volumen anónimo para que node_modules se gestione dentro del contenedor
     environment:
-      - CHOKIDAR_USEPOLLING=true
+      - CHOKIDAR_USEPOLLING=true # Útil para hot-reloading en React en entornos virtuales
     networks:
       - laravel
 
