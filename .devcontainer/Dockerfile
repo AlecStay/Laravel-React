@@ -14,9 +14,11 @@ RUN groupadd -g ${GID} appuser && useradd -u ${UID} -g appuser -m appuser
 USER appuser
 
 WORKDIR /var/www
-COPY laravel/composer.json laravel/composer.lock ./
+# CORRECCIÓN: Si tu código Laravel está en la raíz del contexto de build (Laravel-React)
+# en lugar de un subdirectorio 'laravel' dentro del contexto.
+COPY composer.json composer.lock ./ 
 RUN composer install --no-scripts --no-dev || true
-COPY laravel/. /var/www
+COPY . /var/www 
 RUN chmod -R 777 storage bootstrap/cache
 
 EXPOSE 8000
